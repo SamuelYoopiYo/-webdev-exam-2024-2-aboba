@@ -1,20 +1,46 @@
-{% extends "base.html" %}
+<!-- index.html -->
 
-{% block title %}Главная{% endblock %}
-
+{% extends 'base.html' %}
 {% block content %}
+<div class="container">
+    <h1 class="mt-4">Список книг</h1>
     <div class="row">
-        {% for book in books %}
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <img src="{{ url_for('static', filename='covers/' ~ book.cover.file_name) }}" class="card-img-top" alt="Обложка книги">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ book.title }}</h5>
-                        <p class="card-text">{{ book.description[:100] }}...</p>
-                        <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-primary">Подробнее</a>
+        {% for book in books.items %}
+        <div class="col-md-4">
+            <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="{{ url_for('static', filename='covers/' + book.cover.filename) }}" alt="Обложка книги">
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text">{{ book.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-sm btn-outline-secondary">Просмотр</a>
+                            {% if current_user.is_authenticated and current_user.role.name == 'Администратор' %}
+                            <a href="{{ url_for('edit_book', book_id=book.id) }}" class="btn btn-sm btn-outline-secondary">Редактировать</a>
+                            <form action="{{ url_for('delete_book', book_id=book.id) }}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить эту книгу?')">Удалить</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">Средний рейтинг: {{ book.average_rating }}</small>
                     </div>
                 </div>
             </div>
+        </div>
         {% endfor %}
     </div>
+    {% if books.has_prev or books.has_next %}
+    <div class="d-flex justify-content-between">
+        <div class="btn-group">
+            {% if books.has_prev %}
+            <a href="{{ url_for('index', page=books.prev_num) }}" class="btn btn-outline-secondary">Назад</a>
+            {% endif %}
+            {% if books.has_next %}
+            <a href="{{ url_for('index', page=books.next_num) }}" class="btn btn-outline-secondary">Вперед</a>
+            {% endif %}
+        </div>
+        <small class="text-muted">Страница {{ books.page }} из {{ books.pages }}</small>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}
