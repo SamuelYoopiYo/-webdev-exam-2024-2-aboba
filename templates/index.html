@@ -1,14 +1,21 @@
-<!-- index.html -->
-
 {% extends 'base.html' %}
 {% block content %}
 <div class="container">
     <h1 class="mt-4">Список книг</h1>
+    {% if current_user.is_authenticated and current_user.role.name == 'Администратор' %}
+    <div class="mb-4">
+        <a href="{{ url_for('add_book') }}" class="btn btn-primary">Добавить книгу</a>
+    </div>
+    {% endif %}
     <div class="row">
         {% for book in books.items %}
         <div class="col-md-4">
             <div class="card mb-4 box-shadow">
+                {% if book.cover %}
                 <img class="card-img-top" src="{{ url_for('static', filename='covers/' + book.cover.filename) }}" alt="Обложка книги">
+                {% else %}
+                <img class="card-img-top" src="{{ url_for('static', filename='covers/default.jpg') }}" alt="Обложка по умолчанию">
+                {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ book.title }}</h5>
                     <p class="card-text">{{ book.description }}</p>
